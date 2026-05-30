@@ -1,19 +1,24 @@
 # Drone Ground Station
 
-React + TypeScript + Vite + Tailwind UI for the Pixhawk drone backend that
-lives in [`zahaale20/drone`](https://github.com/zahaale20/drone). The app
-gives an operator live telemetry, a map with breadcrumb trail, MJPEG video,
-flight controls, and a mission editor — all against a single drone over the
-local network.
+React + TypeScript + Vite + Tailwind UI for the **drone onboard service**
+that lives in [`zahaale20/drone`](https://github.com/zahaale20/drone). The
+app gives an operator live telemetry, a map with breadcrumb trail, MJPEG
+video, flight controls, and a mission editor -- all against a single drone
+over the local network.
+
+This repo is **display only.** All sensor intake, mission management, and
+future autonomy/CV processing happen on the drone; this app renders what
+the drone publishes and forwards high-level operator commands back.
 
 ## Architecture in one paragraph
 
-The drone runs a FastAPI backend (`/api/*`, `/ws/telemetry`, `/video`,
-`/login`, `/logout`) plus a session cookie. The Vite dev server in this
-repo proxies all those paths to `VITE_DRONE_URL` so the browser sees a
-single same-origin host. That means cookie auth from `/login` works
-uniformly for `fetch`, `WebSocket`, **and** the `<img src="/video">` MJPEG
-stream — no token-in-URL workarounds.
+The drone runs a FastAPI service (`/api/*`, `/ws/telemetry`, `/video`,
+`/login`, `/logout`) -- pure JSON / WebSocket / MJPEG, no UI. It uses a
+session cookie for browser auth and a bearer token for headless clients.
+The Vite dev server in this repo proxies all those paths to `VITE_DRONE_URL`
+so the browser sees a single same-origin host. That means cookie auth from
+`/login` works uniformly for `fetch`, `WebSocket`, **and** the
+`<img src="/video">` MJPEG stream -- no token-in-URL workarounds.
 
 ## Quick start
 
@@ -33,11 +38,10 @@ npm run dev               # http://localhost:5173
 npm run build             # outputs to dist/
 ```
 
-Open <http://localhost:5173/>, log in with the drone backend credentials
-(`DASHBOARD_USER` / `DASHBOARD_PASS` in `~/.config/dashboard.env` on the
-drone — a random password is printed at first start if you don't set one),
-and you should land on the dashboard.
-
+Open <http://localhost:5173/>, log in with the drone onboard service
+credentials (`DRONE_USER` / `DRONE_PASS` in `~/.config/drone-onboard.env`
+on the drone -- a random password is printed at first start if you don't
+set one), and you should land on the dashboard.
 ## Layout
 
 ```
@@ -64,26 +68,39 @@ src/
     ├── ControlsPanel.tsx    # arm / disarm / takeoff / land / RTL / etc.
     ├── MissionEditor.tsx    # JSON waypoint editor + upload
     ├── Pill.tsx             # shared status chip
-    └── Toast.tsx            # local toast hook
+    └── useToast.tsx         # local toast hook + render node
 ```
 
 ## Auth notes (best practice)
 
-- We use the drone backend's existing cookie session (`SessionMiddleware` in
-  `dashboard/server.py`) rather than passing a bearer token in URLs. The
+- We use the drone onboard service's cookie session (`SessionMiddleware` in
+  `onboard/server.py`) rather than passing a bearer token in URLs. The
   cookie is `HttpOnly` from the browser's perspective, so no XSS payload can
   read it.
 - All requests use `credentials: "include"` and go to relative paths that
-  the dev server proxies to `VITE_DRONE_URL`. In a production deployment,
-  serve `dist/` from the drone backend itself (or any reverse proxy
-  fronting it) so the same-origin model holds.
+  the dev server proxies to `VITE_DRONE_URL`. The drone service is
+  JSON-only, so we never have to follow HTML redirects -- `login` and
+  `logout` are plain JSON over POST.
 - On `401` from any API call, the `AuthContext` flips status to
   `anonymous` and the router redirects to `/login`. The WS close code
   `4401` (used by the drone backend) does the same thing.
 
-## Production build served by the drone
+## Testing
 
-`npm run build` emits a static `dist/`. The drone backend already mounts
-a `StaticFiles` directory; point that mount at `dist/` (or copy it in via
-your deploy) and a browser hitting `http://<pi-ip>:8000/` will load this
-React app directly with no extra moving parts.
+```bash
+npm install            # picks up vitest devDeps
+npm test               # vitest run --reporter=verbose
+npm run test:watch     # vitest watch
+```
+
+Unit tests live next to the modules they cover (`src/**/*.test.ts(x)`)
+and exercise the API client's JSON-only auth contract, the auth context's
+401 funnel, and the telemetry WS reconnect logic.
+
+## Production deploy
+
+`npm run build` emits a static `dist/`. Serve it from any static host
+(nginx, Caddy, GitHub Pages, an S3 bucket, Cloudflare Pages) and point its
+requests at the drone's onboard service via reverse proxy. **Do not serve
+it from the drone itself** -- the drone is intentionally a pure API host
+so it can stay locked down, lightweight, and bandwidth-conservative.

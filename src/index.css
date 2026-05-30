@@ -1,12 +1,23 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* Dark theme tuned to mirror the previous dashboard so muscle memory carries
-   over. Tailwind utility classes drive layout; this file only contains the
-   handful of overrides Leaflet and the map markers need. */
+/* Tactical HUD theme. We render everything monospaced, on near-black, with
+   phosphor-green and amber accents so the operator feels like they're sitting
+   in an attack-helo MFD rather than a web page. */
 
 :root {
   color-scheme: dark;
+  /* Phosphor palette shared by every HUD primitive below. */
+  --hud-bg: #04080a;
+  --hud-panel: rgba(4, 18, 14, 0.78);
+  --hud-grid: #0a1a16;
+  --hud-green: #00ff9c;
+  --hud-green-dim: #128a5a;
+  --hud-amber: #ffb000;
+  --hud-amber-dim: #8a5c00;
+  --hud-red: #ff3030;
+  --hud-text: #bfeacb;
+  --hud-text-dim: #5a8a73;
 }
 
 html,
@@ -15,26 +26,153 @@ body,
   height: 100%;
 }
 
-.leaflet-container {
-  background: #0d141d;
+body {
+  background-color: var(--hud-bg);
+  color: var(--hud-text);
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", ui-monospace, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: 0.02em;
+  /* CRT scanlines + vignette so the panels read as cockpit displays. */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 156, 0.035) 0,
+      rgba(0, 255, 156, 0.035) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(circle at 50% 50%, rgba(0, 40, 30, 0.25), rgba(0, 0, 0, 0.9) 90%);
 }
 
-/* Drone marker: blue triangle, rotated to heading via inline style. */
+.leaflet-container {
+  background: var(--hud-bg);
+  /* Phosphor-tint the basemap so it reads as a tactical recon view. */
+  filter: hue-rotate(85deg) saturate(0.55) brightness(0.7) contrast(1.15);
+}
+
+/* Drone marker: bracketed square + glow, rotated to heading via inline style.
+   Looks like a vehicle marker on a BF4 minimap. */
 .drone-marker {
-  width: 0;
-  height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 18px solid #58a6ff;
-  filter: drop-shadow(0 0 4px rgba(88, 166, 255, 0.8));
-  transform-origin: 50% 70%;
+  width: 18px;
+  height: 18px;
+  position: relative;
+  filter: drop-shadow(0 0 5px rgba(0, 255, 156, 0.9));
+}
+.drone-marker::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: var(--hud-green);
+  clip-path: polygon(50% 0, 100% 100%, 50% 75%, 0 100%);
 }
 
 .user-dot {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #58a6ff;
-  border: 3px solid rgba(11, 15, 20, 0.85);
-  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.25);
+  background: var(--hud-amber);
+  border: 2px solid rgba(4, 8, 10, 0.9);
+  box-shadow: 0 0 6px rgba(255, 176, 0, 0.7);
+}
+
+/* hud-frame: glowing tactical panel with corner brackets, used to wrap any
+   block of content (map, video, telemetry grid). The four ::before/::after
+   pseudo-elements draw L-shaped corner brackets like an aim reticle. */
+.hud-frame {
+  position: relative;
+  border: 1px solid var(--hud-green-dim);
+  background: var(--hud-panel);
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(0, 255, 156, 0.08);
+}
+.hud-frame::before,
+.hud-frame::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--hud-green);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.hud-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+.hud-frame::after {
+  top: -1px;
+  right: -1px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+/* Bottom-corner brackets live inside the element because :before/:after
+   are already taken by the top corners. Drop two empty spans with these
+   classes inside any .hud-frame to get the full reticle. */
+.hud-corner-bl,
+.hud-corner-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--hud-green);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.hud-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+.hud-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* Bracket-style pill: a multifunction-display indicator chip. */
+.hud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hud-pill::before { content: "["; opacity: 0.7; padding-right: 0.1rem; }
+.hud-pill::after  { content: "]"; opacity: 0.7; padding-left: 0.1rem; }
+
+/* Master-caution blinker for the WARNING / FAILURE callouts. */
+@keyframes hud-blink {
+  0%, 50%   { opacity: 1; }
+  50.01%, 100% { opacity: 0.2; }
+}
+.hud-blink {
+  animation: hud-blink 0.7s steps(1, end) infinite;
+}
+
+/* HUD overlay primitives on top of the video feed. */
+.hud-reticle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--hud-green);
+  filter: drop-shadow(0 0 2px rgba(0, 255, 156, 0.7));
+}
+
+/* All-caps tactical label utility used by the section headers. */
+.hud-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
 }

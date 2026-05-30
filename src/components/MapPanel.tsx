@@ -67,19 +67,19 @@ export function MapPanel({ telemetry, mission, onClearTrack }: MapPanelProps) {
     userMarkerRef.current = L.marker([0, 0], { icon: userIcon, opacity: 0 }).addTo(map);
     userRadiusRef.current = L.circle([0, 0], {
       radius: 1,
-      color: "#58a6ff",
+      color: "#ffb000",
       weight: 2,
-      fillColor: "#58a6ff",
+      fillColor: "#ffb000",
       fillOpacity: 0.12,
       opacity: 0,
     }).addTo(map);
     trackLineRef.current = L.polyline([], {
-      color: "#58a6ff",
+      color: "#00ff9c",
       weight: 3,
-      opacity: 0.85,
+      opacity: 0.9,
     }).addTo(map);
     missionLineRef.current = L.polyline([], {
-      color: "#d29922",
+      color: "#ffb000",
       weight: 2,
       dashArray: "6 6",
     }).addTo(map);
@@ -161,9 +161,9 @@ export function MapPanel({ telemetry, mission, onClearTrack }: MapPanelProps) {
     mission.forEach((w, i) => {
       const m = L.circleMarker([w[0], w[1]], {
         radius: 7,
-        color: "#d29922",
+        color: "#ffb000",
         weight: 2,
-        fillColor: "#3f2f0f",
+        fillColor: "#3a2900",
         fillOpacity: 1,
       })
         .addTo(map)
@@ -224,18 +224,21 @@ export function MapPanel({ telemetry, mission, onClearTrack }: MapPanelProps) {
 
   return (
     <div>
-      <div className="mb-2.5 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Map</h2>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--hud-text-dim)]">
+          recon
+        </span>
         <Pill tone={fix ? "ok" : userInfo ? "ok" : "bad"}>{infoText}</Pill>
       </div>
-      <div ref={containerRef} className="h-[420px] w-full rounded-lg bg-slate-900" />
+      <div
+        ref={containerRef}
+        className="h-[420px] w-full border border-[var(--hud-green-dim)] bg-black"
+      />
       <div className="mt-2 flex flex-wrap gap-1.5">
-        <Button kind="primary" onClick={focusMyLocation}>
-          Focus my location
-        </Button>
-        <Button onClick={centerOnDrone}>Center on drone</Button>
-        <Button onClick={fitMission}>Fit mission</Button>
-        <Button onClick={onClearTrack}>Clear track</Button>
+        <Button kind="primary" onClick={focusMyLocation}>◎ self</Button>
+        <Button onClick={centerOnDrone}>◆ drone</Button>
+        <Button onClick={fitMission}>▣ fit mission</Button>
+        <Button onClick={onClearTrack}>✕ clear track</Button>
       </div>
     </div>
   );
@@ -243,7 +246,7 @@ export function MapPanel({ telemetry, mission, onClearTrack }: MapPanelProps) {
 
 // Small button variant shared with the map controls. Defined here to keep
 // the map panel self-contained; the dashboard's main controls panel uses its
-// own copy with the same Tailwind classes.
+// own copy with the same tactical styling.
 function Button({
   children,
   onClick,
@@ -254,11 +257,11 @@ function Button({
   kind?: "default" | "primary";
 }) {
   const base =
-    "rounded-md border px-3 py-1.5 text-sm transition disabled:cursor-not-allowed disabled:opacity-60";
+    "border bg-black/40 px-2.5 py-1 font-mono text-xs uppercase tracking-widest transition";
   const tone =
     kind === "primary"
-      ? "border-sky-700 bg-sky-900/60 text-slate-100 hover:border-sky-500"
-      : "border-slate-800 bg-slate-900 text-slate-100 hover:border-sky-500";
+      ? "border-[var(--hud-green)] text-[var(--hud-green)] hover:bg-[var(--hud-green-dim)]/30"
+      : "border-[var(--hud-green-dim)] text-[var(--hud-text)] hover:border-[var(--hud-green)] hover:text-[var(--hud-green)]";
   return (
     <button type="button" onClick={onClick} className={`${base} ${tone}`}>
       {children}

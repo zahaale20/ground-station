@@ -12,9 +12,9 @@ interface TelemetryHookResult {
 }
 
 // Hook that keeps an auto-reconnecting WebSocket open to /ws/telemetry and
-// surfaces the latest payload. The drone backend pushes ~5 Hz so we don't
-// throttle here — React + the dashboard's coarse-grained text renders cope
-// fine at that rate.
+// surfaces the latest payload. The drone onboard service pushes ~5 Hz so
+// we don't throttle here -- React + the dashboard's coarse-grained text
+// renders cope fine at that rate.
 export function useTelemetry(enabled: boolean): TelemetryHookResult {
   const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
   const [socketState, setSocketState] = useState<"connecting" | "open" | "closed">(

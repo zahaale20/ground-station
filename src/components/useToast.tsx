@@ -35,12 +35,13 @@ export function useToast() {
   const node = message ? (
     <div
       role="status"
-      className={`mt-2 whitespace-pre-wrap rounded-md border px-3 py-2 text-xs ${
+      className={`mt-2 whitespace-pre-wrap border px-3 py-2 font-mono text-[11px] uppercase tracking-widest ${
         message.error
-          ? "border-rose-900 bg-rose-950/60 text-rose-200"
-          : "border-sky-900 bg-sky-950/60 text-sky-100"
+          ? "border-[var(--hud-red)] bg-black/70 text-[var(--hud-red)]"
+          : "border-[var(--hud-green)] bg-black/70 text-[var(--hud-green)]"
       }`}
     >
+      {message.error ? "◆ " : "▶ "}
       {message.text}
     </div>
   ) : null;

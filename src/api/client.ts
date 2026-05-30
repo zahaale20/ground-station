@@ -62,6 +62,8 @@ export const api = {
 };
 
 // Login uses x-www-form-urlencoded to match the backend's Form(...) handler.
+// The drone API is JSON-only and returns 200 {ok: true} on success or 401
+// {error: "invalid_credentials"} on failure -- no HTML, no redirects.
 export async function login(username: string, password: string): Promise<void> {
   const form = new URLSearchParams({ username, password });
   const res = await fetch("/login", {
@@ -69,17 +71,12 @@ export async function login(username: string, password: string): Promise<void> {
     credentials: "include",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: form.toString(),
-    // Don't follow the 303 redirect the backend sends on success; we route
-    // client-side after we see a 2xx/3xx.
-    redirect: "manual",
   });
-  // "opaqueredirect" means the browser saw a redirect but cannot expose
-  // headers — that's actually the success path for the backend's 303.
-  if (res.type === "opaqueredirect" || res.ok) return;
+  if (res.ok) return;
   if (res.status === 401) throw new ApiError(401, "Invalid username or password");
   throw new ApiError(res.status, `Login failed: ${res.statusText}`);
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/logout", { method: "GET", credentials: "include", redirect: "manual" });
+  await fetch("/logout", { method: "POST", credentials: "include" });
 }

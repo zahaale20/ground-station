@@ -32,49 +32,55 @@ export function InfoPanel() {
     };
   }, []);
 
-  if (error) return <div className="text-sm text-rose-300">{error}</div>;
-  if (!info) return <div className="text-sm text-slate-400">loading…</div>;
+  if (error) return <div className="font-mono text-xs uppercase text-[var(--hud-red)]">{error}</div>;
+  if (!info) return <div className="font-mono text-xs uppercase text-[var(--hud-text-dim)]">loading…</div>;
 
   const dash = (value: unknown) =>
     value === null || value === undefined || value === "" ? "—" : String(value);
 
   const rows: Array<[string, string]> = [
-    ["Vendor", dash(info.vendor)],
-    ["Product", dash(info.product)],
-    ["Flight SW", dash(info.flight_sw)],
-    ["OS SW", dash(info.os_sw)],
-    ["Git hash", dash(info.flight_sw_git)],
-    ["HW UID", dash(info.hardware_uid)],
+    ["VENDOR", dash(info.vendor)],
+    ["PRODUCT", dash(info.product)],
+    ["FW", dash(info.flight_sw)],
+    ["OS", dash(info.os_sw)],
+    ["GIT", dash(info.flight_sw_git)],
+    ["UID", dash(info.hardware_uid)],
   ];
 
   const paramRows = info.params ? Object.entries(info.params) : [];
 
   return (
     <div>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
         {rows.map(([key, value]) => (
           <div
             key={key}
-            className="flex justify-between border-b border-dashed border-slate-800/80 py-1 last:border-none"
+            className="flex justify-between border-b border-dashed border-[var(--hud-green-dim)]/30 py-1 last:border-none"
           >
-            <dt className="text-slate-400">{key}</dt>
-            <dd className="tabular-nums">{value}</dd>
+            <dt className="font-mono uppercase tracking-wider text-[var(--hud-text-dim)]">
+              {key}
+            </dt>
+            <dd className="font-mono tabular-nums text-[var(--hud-green)]">{value}</dd>
           </div>
         ))}
       </dl>
       {paramRows.length > 0 && (
         <>
-          <h3 className="mt-3.5 mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Key Parameters
-          </h3>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+          <div className="mt-3.5 mb-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--hud-text-dim)]">
+            key parameters
+          </div>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             {paramRows.map(([key, value]) => (
               <div
                 key={key}
-                className="flex justify-between border-b border-dashed border-slate-800/80 py-1 last:border-none"
+                className="flex justify-between border-b border-dashed border-[var(--hud-green-dim)]/30 py-1 last:border-none"
               >
-                <dt className="text-slate-400">{key}</dt>
-                <dd className="tabular-nums">{value ?? "—"}</dd>
+                <dt className="font-mono uppercase tracking-wider text-[var(--hud-text-dim)]">
+                  {key}
+                </dt>
+                <dd className="font-mono tabular-nums text-[var(--hud-green)]">
+                  {value ?? "—"}
+                </dd>
               </div>
             ))}
           </dl>

@@ -109,20 +109,20 @@ export function MissionEditor({ telemetry, onMissionChange, notify }: MissionEdi
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-          Mission
-        </h2>
-        <Pill>{count} wp</Pill>
+        <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--hud-text-dim)]">
+          waypoint stack
+        </span>
+        <Pill tone={count > 0 ? "ok" : "default"}>{count} wp</Pill>
       </div>
       <textarea
         value={jsonText}
         onChange={(e) => setJsonText(e.target.value)}
         placeholder="[[lat, lon, alt_m], [lat, lon, alt_m], ...]"
-        className="block min-h-[110px] w-full resize-y rounded-md border border-slate-800 bg-slate-950 p-2 font-mono text-xs text-slate-100 outline-none focus:border-sky-500"
+        className="block min-h-[110px] w-full resize-y border border-[var(--hud-green-dim)] bg-black/60 p-2 font-mono text-xs text-[var(--hud-green)] outline-none focus:border-[var(--hud-green)]"
       />
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <label className="flex items-center gap-1 text-xs text-slate-400">
-          speed
+        <label className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-[var(--hud-text-dim)]">
+          spd
           <input
             type="number"
             min={1}
@@ -130,30 +130,30 @@ export function MissionEditor({ telemetry, onMissionChange, notify }: MissionEdi
             step={0.5}
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value) || 5)}
-            className="w-16 rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-sm tabular-nums outline-none focus:border-sky-500"
+            className="w-16 border border-[var(--hud-green-dim)] bg-black/60 px-2 py-1 font-mono text-sm tabular-nums text-[var(--hud-green)] outline-none focus:border-[var(--hud-green)]"
           />
           m/s
         </label>
         <button
           type="button"
           onClick={() => void upload()}
-          className="rounded-md border border-sky-700 bg-sky-900/60 px-3 py-1.5 text-sm transition hover:border-sky-500"
+          className="border border-[var(--hud-green)] bg-black/40 px-3 py-1 font-mono text-xs uppercase tracking-widest text-[var(--hud-green)] transition hover:bg-[var(--hud-green-dim)]/30"
         >
-          Upload Mission
+          ▲ Upload
         </button>
         <button
           type="button"
           onClick={() => loadIntoEditor(SITL_SQUARE)}
-          className="rounded-md border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm transition hover:border-sky-500"
+          className="border border-[var(--hud-green-dim)] bg-black/40 px-3 py-1 font-mono text-xs uppercase tracking-widest text-[var(--hud-text)] transition hover:border-[var(--hud-green)] hover:text-[var(--hud-green)]"
         >
           SITL square
         </button>
         <button
           type="button"
           onClick={loadSquareHere}
-          className="rounded-md border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm transition hover:border-sky-500"
+          className="border border-[var(--hud-green-dim)] bg-black/40 px-3 py-1 font-mono text-xs uppercase tracking-widest text-[var(--hud-text)] transition hover:border-[var(--hud-green)] hover:text-[var(--hud-green)]"
         >
-          Square at current pos
+          square @ pos
         </button>
       </div>
     </div>

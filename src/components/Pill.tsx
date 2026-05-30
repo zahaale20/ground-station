@@ -2,15 +2,19 @@ import type { ReactNode } from "react";
 
 type Tone = "default" | "ok" | "warn" | "bad";
 
+// Phosphor tones map to the cockpit color language: green = nominal,
+// amber = caution, red = master-warning. "default" stays dim so off-state
+// indicators read as "no signal" rather than as a positive status.
 const toneClasses: Record<Tone, string> = {
-  default: "bg-slate-800 text-slate-400",
-  ok: "bg-emerald-950 text-emerald-400",
-  warn: "bg-amber-950 text-amber-300",
-  bad: "bg-rose-950 text-rose-400",
+  default: "text-[var(--hud-text-dim)]",
+  ok: "text-[var(--hud-green)]",
+  warn: "text-[var(--hud-amber)]",
+  bad: "text-[var(--hud-red)]",
 };
 
-// Status pill used in the header strip and the map info chip. Mirrors the
-// `.pill` element from the legacy HTML so the visual rhythm stays consistent.
+// Bracket-style HUD indicator chip. The "[" and "]" glyphs are drawn by
+// the .hud-pill CSS so every pill stays visually identical to an MFD label
+// like [ ARMED ] or [ LINK ].
 export function Pill({
   children,
   tone = "default",
@@ -21,10 +25,9 @@ export function Pill({
   className?: string;
 }) {
   return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${toneClasses[tone]} ${className}`}
-    >
+    <span className={`hud-pill ${toneClasses[tone]} ${className}`}>
       {children}
     </span>
   );
 }
+

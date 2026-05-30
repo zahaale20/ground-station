@@ -1,6 +1,6 @@
-// Telemetry shapes mirror the JSON the drone backend broadcasts on
+// Telemetry shapes mirror the JSON the drone onboard service broadcasts on
 // /ws/telemetry. Keep these aligned with dataclasses.asdict(STATE) in
-// drone/dashboard/server.py.
+// drone/onboard/server.py.
 
 export interface Health {
   gyro?: boolean;

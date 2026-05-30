@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 
-// Single-user login screen. Mirrors the credential prompts from the
-// previous static HTML page, but talks to /login via fetch so we stay in
-// the SPA instead of letting the browser follow the 303 redirect.
+// Authenticate screen. Styled as a cockpit boot screen so the operator
+// "powers on" the GCS rather than logging into a web form.
 export function Login() {
   const { login } = useAuth();
   const [username, setUsername] = useState("");
@@ -19,26 +18,36 @@ export function Login() {
       await login(username, password);
       // The router observes status === "authed" and unmounts this view.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "AUTH FAILURE");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="grid h-full place-items-center bg-slate-950 px-4">
+    <div className="grid h-full place-items-center px-4">
       <form
         onSubmit={onSubmit}
         autoComplete="off"
-        className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900/80 p-7 shadow-2xl backdrop-blur"
+        className="hud-frame relative w-full max-w-sm p-7"
       >
-        <h1 className="mb-1 text-lg font-semibold tracking-wide">
-          Drone Ground Station
+        <span className="hud-corner-bl" />
+        <span className="hud-corner-br" />
+        <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.35em] text-[var(--hud-text-dim)]">
+          stallion // ground station
+        </div>
+        <h1 className="mb-1 font-mono text-lg font-bold tracking-[0.18em] text-[var(--hud-green)]">
+          ◆ AUTHENTICATE
         </h1>
-        <p className="mb-5 text-sm text-slate-400">Sign in to continue.</p>
+        <p className="mb-5 font-mono text-xs uppercase tracking-widest text-[var(--hud-text-dim)]">
+          operator credentials required
+        </p>
 
-        <label className="mb-1 block text-xs text-slate-400" htmlFor="username">
-          Username
+        <label
+          className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-[var(--hud-text-dim)]"
+          htmlFor="username"
+        >
+          callsign
         </label>
         <input
           id="username"
@@ -48,11 +57,14 @@ export function Login() {
           autoFocus
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="mb-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-sky-500"
+          className="mb-3 w-full border border-[var(--hud-green-dim)] bg-black/60 px-3 py-2 font-mono text-sm text-[var(--hud-green)] outline-none focus:border-[var(--hud-green)]"
         />
 
-        <label className="mb-1 block text-xs text-slate-400" htmlFor="password">
-          Password
+        <label
+          className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-[var(--hud-text-dim)]"
+          htmlFor="password"
+        >
+          access code
         </label>
         <input
           id="password"
@@ -62,23 +74,24 @@ export function Login() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-sky-500"
+          className="w-full border border-[var(--hud-green-dim)] bg-black/60 px-3 py-2 font-mono text-sm text-[var(--hud-green)] outline-none focus:border-[var(--hud-green)]"
         />
 
         <button
           type="submit"
           disabled={busy}
-          className="mt-5 w-full rounded-lg bg-sky-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-5 w-full border border-[var(--hud-green)] bg-[var(--hud-green-dim)]/20 px-3 py-2.5 font-mono text-sm font-bold uppercase tracking-[0.3em] text-[var(--hud-green)] transition hover:bg-[var(--hud-green-dim)]/40 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {busy ? "Signing in…" : "Log in"}
+          {busy ? "linking…" : "▶ engage"}
         </button>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-rose-900 bg-rose-950/60 px-3 py-2 text-sm text-rose-200">
-            {error}
+          <div className="mt-4 border border-[var(--hud-red)] bg-black/70 px-3 py-2 font-mono text-xs uppercase tracking-widest text-[var(--hud-red)] hud-blink">
+            ◆ {error}
           </div>
         )}
       </form>
     </div>
   );
 }
+
