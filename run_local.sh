@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Run the ground-station UI locally on a MacBook (or any workstation).
 #
-# This serves the groundstation/ tree from a local http.server. Opening / in
-# the browser hits groundstation/index.html, which redirects to
-# groundstation/ui/index.html. The UI then talks to the remote drone backend
-# at $DASHBOARD_API_URL using $DASHBOARD_API_TOKEN as a bearer token.
+# This serves the repo root from a local http.server. Opening / in the
+# browser hits index.html, which redirects to ui/index.html. The UI then
+# talks to the remote drone backend at $DASHBOARD_API_URL using
+# $DASHBOARD_API_TOKEN as a bearer token.
 #
 # Usage:
 #   DASHBOARD_API_URL=http://<pi-ip>:8000 \
 #   DASHBOARD_API_TOKEN=... \
-#   groundstation/run_local.sh
+#   ./run_local.sh
 #
 # Optional:
-#   PORT=8080 BIND=127.0.0.1 groundstation/run_local.sh
+#   PORT=8080 BIND=127.0.0.1 ./run_local.sh
 
 set -euo pipefail
 

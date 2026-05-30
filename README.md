@@ -1,43 +1,59 @@
-# Pixhawk drone + ground station
+# Ground station
 
-A two-sided project:
+This repo contains the **ground-station** side of the Pixhawk project: the
+browser UI (map, video, flight controls, mission editor) and the local
+launcher that opens it pointed at the drone.
 
-- [`drone/`](drone/) — everything that runs **on the aircraft**: the Pixhawk
-  autopilot, the Raspberry Pi attached to it, MAVSDK mission scripts, the
-  FastAPI telemetry/command backend, the MJPEG camera bridge, and the
-  systemd unit that keeps it running.
-- [`groundstation/`](groundstation/) — everything that runs **on the
-  operator's laptop**: the browser UI (map, video, flight controls, mission
-  editor) and the local launcher that opens it pointed at the drone backend.
+The drone-side code (FastAPI backend, MAVSDK scripts, systemd unit) lives
+in a separate repository.
 
-```
-.
-├── drone/                     # runs on the Pi attached to the Pixhawk
-│   ├── README.md              # drone-side setup, wiring, SITL notes
-│   ├── sitl.md                # PX4 SITL bring-up on the Pi
-│   ├── scripts/               # heartbeat.py, mavsdk_telemetry.py
-│   ├── missions/              # preflight_takeoff_land.py, upload_waypoints.py, ...
-│   ├── dashboard/             # FastAPI backend: /api, /ws/telemetry, /video
-│   ├── systemd/               # user-level service unit + env template
-│   └── tools/sim_up.sh        # tmux orchestrator for PX4 SITL + dashboard
-│
-└── groundstation/             # runs on the operator's laptop
-    ├── README.md              # ground-station setup + first run
-    ├── index.html             # local redirect into the UI
-    ├── ui/                    # the actual dashboard (mounted by the backend too)
-    └── run_local.sh           # serve the UI locally, point it at the drone
-```
+## Layout
 
-## Typical workflow
+| Path           | Purpose                                                                 |
+| -------------- | ----------------------------------------------------------------------- |
+| `ui/`          | The actual dashboard (map, video, flight controls, mission editor)      |
+| `index.html`   | Local redirect — opens `/ui/index.html` and forwards query parameters   |
+| `run_local.sh` | Serve this directory on `localhost` and open the UI pointed at the drone |
 
-1. **Drone side** (Raspberry Pi): start the backend, either by hand or via
-   the systemd unit in [`drone/systemd/`](drone/systemd/). The backend prints
-   an API token at first launch.
-2. **Ground-station side** (laptop): run
-   [`groundstation/run_local.sh`](groundstation/run_local.sh) with the
-   drone's IP and the API token. The browser opens the UI, which talks back
-   to the drone over WebSocket and REST.
+The UI is shared: the drone-side FastAPI backend mounts the same `ui/`
+directory at `/`, so pointing a browser straight at the Pi (e.g.
+`http://<pi-ip>:8000/`) also works. Running it locally is preferred when:
 
-See [`drone/README.md`](drone/README.md) and
-[`groundstation/README.md`](groundstation/README.md) for details specific to
-each side.
+- the laptop has a much better browser / map experience than the Pi,
+- you want browser geolocation (which most browsers gate on `localhost` or
+  HTTPS),
+- you want the UI to keep working while you cycle the Pi.
+
+## First run
+
+1. Start the drone-side backend (see the drone repo). On first launch it
+   prints something like:
+
+   ```
+   [dashboard] generated api token: <TOKEN>
+   ```
+
+   Copy that token. To make it stable across restarts, set
+   `DASHBOARD_API_TOKEN` in `~/.config/dashboard.env` on the drone.
+
+2. On the laptop, from the repo root:
+
+   ```bash
+   DASHBOARD_API_URL=http://<pi-ip>:8000 \
+   DASHBOARD_API_TOKEN=<TOKEN> \
+   ./run_local.sh
+   ```
+
+   The script serves this directory on `http://localhost:8000/` and opens
+   the browser at `http://localhost:8000/?api=<...>&token=<...>`. The UI
+   then talks to the drone over WebSocket and REST using the bearer token.
+
+## Notes
+
+- `PORT=...` and `BIND=...` are honoured by `run_local.sh` if you need to
+  change the local listener.
+- The MJPEG video endpoint (`/video`) is fetched from the drone backend
+  directly, not the local server — so make sure the drone is reachable from
+  the laptop on whatever port `DASHBOARD_API_URL` points at.
+- Keep the page on `localhost` (not your LAN IP) so the browser allows
+  geolocation without HTTPS.
