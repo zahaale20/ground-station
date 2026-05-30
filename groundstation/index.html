@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Drone Dashboard</title>
-<meta http-equiv="refresh" content="0; url=/dashboard/static/index.html">
+  <meta http-equiv="refresh" content="0; url=/ui/index.html">
 <style>
   body {
     margin: 0;
@@ -29,7 +29,7 @@
   a { color: #58a6ff; }
 </style>
 <script>
-  const target = new URL('/dashboard/static/index.html', location.origin);
+  const target = new URL('/ui/index.html', location.origin);
   target.search = location.search;
   location.replace(target.toString());
 </script>
@@ -37,9 +37,9 @@
 <body>
   <div class="card">
     <h1>Drone Dashboard</h1>
-    <p>Redirecting to the dashboard. If that does not happen, open <code>/dashboard/static/index.html</code>.</p>
+    <p>Redirecting to the ground-station UI. If that does not happen, open <code>/ui/index.html</code>.</p>
     <p>If you are running this locally on your MacBook, keep the page on <code>localhost</code> so geolocation works.</p>
-    <p><a href="/dashboard/static/index.html">Continue</a></p>
+    <p><a href="/ui/index.html">Continue</a></p>
   </div>
 </body>
 </html>

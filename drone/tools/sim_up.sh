@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
-# Pixhawk-on-Pi simulation orchestrator.
+# Pixhawk-on-Pi simulation orchestrator (drone-side).
 #
-# Brings up PX4 SITL and the dashboard in a single tmux session so you can
-# fly the simulated quadcopter from a browser pointed at this Pi.
+# Brings up PX4 SITL and the dashboard backend in a single tmux session so you
+# can fly the simulated quadcopter from a browser pointed at this Pi. The
+# browser UI itself is in ../../groundstation/ui and is mounted by the backend.
 #
 # Usage:
-#   tools/sim_up.sh                # start SITL + dashboard (SITL conn)
-#   tools/sim_up.sh hw             # start dashboard only, talk to USB Pixhawk
-#   tools/sim_up.sh down           # tear it all down
+#   drone/tools/sim_up.sh                # start SITL + dashboard (SITL conn)
+#   drone/tools/sim_up.sh hw             # start dashboard only, talk to USB Pixhawk
+#   drone/tools/sim_up.sh down           # tear it all down
 #
 # Requirements (one-time):
 #   - PX4-Autopilot built once: `cd ~/PX4-Autopilot && make px4_sitl none_iris`
 #   - Project venv at ~/pixhawk/.venv with dashboard deps installed:
-#       ~/pixhawk/.venv/bin/pip install -r ~/pixhawk/dashboard/requirements.txt
+#       ~/pixhawk/.venv/bin/pip install -r ~/pixhawk/drone/dashboard/requirements.txt
 #   - tmux:  sudo apt install tmux
 #
 # Credentials:
@@ -59,7 +60,7 @@ start_dashboard_window() {
             DASHBOARD_SECRET='${DASHBOARD_SECRET:-}' \
          DASHBOARD_API_TOKEN='${DASHBOARD_API_TOKEN:-}' \
             DRONE_CAM='${DRONE_CAM:-/dev/video0}' && \
-     '$VENV/bin/python' -m dashboard.server --conn \"\$DRONE_CONN\" --host \"\$DASHBOARD_HOST\" --port \"\$DASHBOARD_PORT\"; \
+     '$VENV/bin/python' -m drone.dashboard.server --conn \"\$DRONE_CONN\" --host \"\$DASHBOARD_HOST\" --port \"\$DASHBOARD_PORT\"; \
      echo; echo '[dashboard exited — press any key to close]'; read -n1"
 }
 

@@ -8,9 +8,9 @@ FastAPI app exposing:
 
 Run:
     source ~/pixhawk/.venv/bin/activate
-    pip install fastapi 'uvicorn[standard]' opencv-python
-    python -m dashboard.server --conn udp://:14540      # SITL
-    python -m dashboard.server --conn serial:///dev/ttyACM0:115200  # HW
+    pip install -r drone/dashboard/requirements.txt
+    python -m drone.dashboard.server --conn udp://:14540          # SITL
+    python -m drone.dashboard.server --conn serial:///dev/ttyACM0:115200  # HW
 
 Then open http://<pi-ip>:8000/
 """
@@ -44,7 +44,10 @@ from mavsdk.mission import MissionItem, MissionPlan, MissionError
 
 log = logging.getLogger("dashboard")
 
-STATIC_DIR = Path(__file__).parent / "static"
+# The ground-station UI is owned by the groundstation/ tree. The drone-side
+# FastAPI backend mounts it so a browser pointed straight at the Pi gets the
+# same page that the laptop launcher serves locally.
+STATIC_DIR = Path(__file__).resolve().parents[2] / "groundstation" / "ui"
 CAMERA_DEVICE = os.environ.get("DRONE_CAM", "/dev/video0")  # set to "none" to disable
 PARAMS_OF_INTEREST = [
     "SYS_AUTOSTART", "MAV_TYPE", "COM_RC_IN_MODE", "COM_DISARM_LAND",

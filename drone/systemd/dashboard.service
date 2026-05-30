@@ -1,9 +1,11 @@
-# Drone dashboard as a user-level systemd service.
+# Drone dashboard as a user-level systemd service. This unit runs on the
+# drone-side host (the Raspberry Pi attached to the Pixhawk). The browser UI
+# itself lives under ../../groundstation/ui and is mounted by the backend.
 #
 # Install:
 #   mkdir -p ~/.config/systemd/user
-#   cp ~/pixhawk/tools/dashboard.service ~/.config/systemd/user/
-#   cp ~/pixhawk/tools/dashboard.env.example ~/.config/dashboard.env
+#   cp ~/pixhawk/drone/systemd/dashboard.service ~/.config/systemd/user/
+#   cp ~/pixhawk/drone/systemd/dashboard.env.example ~/.config/dashboard.env
 #   $EDITOR ~/.config/dashboard.env       # set DASHBOARD_USER / DASHBOARD_PASS
 #   systemctl --user daemon-reload
 #   systemctl --user enable --now dashboard
@@ -23,7 +25,7 @@ WorkingDirectory=%h/pixhawk
 EnvironmentFile=%h/.config/dashboard.env
 # DRONE_CONN, DASHBOARD_USER, DASHBOARD_PASS, DASHBOARD_SECRET, DRONE_CAM,
 # DASHBOARD_HOST, DASHBOARD_PORT are all read from EnvironmentFile.
-ExecStart=%h/pixhawk/.venv/bin/python -m dashboard.server
+ExecStart=%h/pixhawk/.venv/bin/python -m drone.dashboard.server
 Restart=on-failure
 RestartSec=3
 

@@ -1,54 +1,43 @@
-# Pixhawk 6C — Workstation Setup
+# Pixhawk drone + ground station
 
-Hardware: Holybro/Auterion **PX4 FMU v6C.x** (USB ID `3185:0038`)
-Host: Raspberry Pi, Debian 13 (trixie), arm64
-Device node: `/dev/ttyACM0`
-Stable symlink: `/dev/serial/by-id/usb-Auterion_PX4_FMU_v6C.x_0-if00`
+A two-sided project:
 
-## What is installed
+- [`drone/`](drone/) — everything that runs **on the aircraft**: the Pixhawk
+  autopilot, the Raspberry Pi attached to it, MAVSDK mission scripts, the
+  FastAPI telemetry/command backend, the MJPEG camera bridge, and the
+  systemd unit that keeps it running.
+- [`groundstation/`](groundstation/) — everything that runs **on the
+  operator's laptop**: the browser UI (map, video, flight controls, mission
+  editor) and the local launcher that opens it pointed at the drone backend.
 
-| Tool                       | Where                                                      | Use                           |
-| -------------------------- | ---------------------------------------------------------- | ----------------------------- |
-| `mavproxy.py`              | pipx venv `~/.local/share/pipx/venvs/mavproxy`             | Terminal GCS, map, console    |
-| `pymavlink`, `mavsdk`, `pyserial`, `dronekit` | venv `~/pixhawk/.venv`                  | Python scripting              |
-| `python3-wxgtk4.0` (apt)   | system, symlinked into the mavproxy venv                   | MAVProxy `module load map`    |
-
-QGroundControl is **not installed** — no official ARM64 AppImage. Use a
-laptop for the GUI, or build from source.
-
-## Quick start
-
-```bash
-# Terminal GCS
-mavproxy.py --master=/dev/serial/by-id/usb-Auterion_PX4_FMU_v6C.x_0-if00 --baudrate=115200
-
-# Inside MAVProxy: load helpers
-module load console
-module load map        # graphical map (needs X / desktop session)
-status                 # vehicle info
-param show SYS_AUTOSTART
-
-# Python scripting
-source ~/pixhawk/.venv/bin/activate
-python heartbeat.py
-python mavsdk_telemetry.py
+```
+.
+├── drone/                     # runs on the Pi attached to the Pixhawk
+│   ├── README.md              # drone-side setup, wiring, SITL notes
+│   ├── sitl.md                # PX4 SITL bring-up on the Pi
+│   ├── scripts/               # heartbeat.py, mavsdk_telemetry.py
+│   ├── missions/              # preflight_takeoff_land.py, upload_waypoints.py, ...
+│   ├── dashboard/             # FastAPI backend: /api, /ws/telemetry, /video
+│   ├── systemd/               # user-level service unit + env template
+│   └── tools/sim_up.sh        # tmux orchestrator for PX4 SITL + dashboard
+│
+└── groundstation/             # runs on the operator's laptop
+    ├── README.md              # ground-station setup + first run
+    ├── index.html             # local redirect into the UI
+    ├── ui/                    # the actual dashboard (mounted by the backend too)
+    └── run_local.sh           # serve the UI locally, point it at the drone
 ```
 
-## Notes / gotchas hit during setup
+## Typical workflow
 
-- `setuptools >= 81` removed `pkg_resources`, which MAVProxy still imports.
-  We pinned `setuptools<81` in the MAVProxy pipx venv.
-- `wxPython` has no ARM64 wheel on PyPI. We installed `python3-wxgtk4.0`
-  from apt and symlinked `/usr/lib/python3/dist-packages/wx*` into the
-  MAVProxy venv so the `map` module works.
-- `~/.local/bin` was appended to `PATH` in `~/.bashrc`.
-- ModemManager is not installed — good, it would steal `/dev/ttyACM0`.
-- User `azaharia` is already in the `dialout` group.
+1. **Drone side** (Raspberry Pi): start the backend, either by hand or via
+   the systemd unit in [`drone/systemd/`](drone/systemd/). The backend prints
+   an API token at first launch.
+2. **Ground-station side** (laptop): run
+   [`groundstation/run_local.sh`](groundstation/run_local.sh) with the
+   drone's IP and the API token. The browser opens the UI, which talks back
+   to the drone over WebSocket and REST.
 
-## Network forwarding (so a laptop GCS can connect over Wi-Fi)
-
-```bash
-mavproxy.py --master=/dev/ttyACM0 --baudrate=115200 \
-            --out=udp:<laptop-ip>:14550
-```
-On the laptop, open QGroundControl → it auto-listens on UDP 14550.
+See [`drone/README.md`](drone/README.md) and
+[`groundstation/README.md`](groundstation/README.md) for details specific to
+each side.
