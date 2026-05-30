@@ -1,6 +1,24 @@
+# Build output
+dist/
+node_modules/
+.vite/
+
+# Logs and local env
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.local
+.env.*.local
+*.local
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/*.local
+
+# Legacy Python venv (no longer used; kept ignored just in case)
 .venv/
 __pycache__/
 *.pyc
-.DS_Store
-.env
-*.local
